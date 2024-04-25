@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signed Document Download</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Download Signed Document</h2>
+    <input type="text" id="documentIdInput" class="form-control" placeholder="Enter Document ID">
+    <input type="text" id="downloadKeyInput" class="form-control mt-3" placeholder="Enter Download Key">
+    <button class="btn btn-info mt-3" onclick="getSignedDocument()">Get Signing Result</button>
+    <div class="card results-box mt-4">
+        <div class="card-header">
+            Result
+        </div>
+        <div class="card-body">
+            <pre id="wsResult"></pre>
+            <button class="btn btn-success mt-3" onclick="downloadDocument()">Download Signed Document</button>
+
+        </div>
+    </div>
+
+</div>
+<script src="js/config.js"></script>
+<script src="js/autentico2.js"></script>
+<script>
+    const service = new DigitalSignatureService('https://dev.autentico2.com/api', API_KEY);
+    let fileResult = null;
+    const resultBox = document.getElementById('wsResult');    
+    function getSignedDocument() {
+        const documentId = document.getElementById('documentIdInput').value;
+        const downloadKey = document.getElementById('downloadKeyInput').value;
+        service.getSignedDocument(documentId, downloadKey, console.error)
+            .then(data => {
+                if(data){
+                    resultBox.textContent = JSON.stringify(data, null, 2); 
+                    if(data.successful){
+                        fileResult = data.value;
+                    }
+                }
+            })
+            .catch(error => {
+                resultBox.textContent = 'Error during document download: ' + error.toString();
+            });
+
+    }
+    function base64ToBlob(base64, type = 'application/pdf') {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return new Blob([bytes], {type});
+    }
+
+    async function downloadDocument() {        
+        if(fileResult!==null){            
+            const fileName = fileResult.fileName;
+            const fileData = fileResult.fileData;
+            const blob = base64ToBlob(fileData);
+            const downloadUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(downloadUrl);            
+        }else{
+            alert('No file to download');
+        }
+    }
+</script>
+</body>
+</html>

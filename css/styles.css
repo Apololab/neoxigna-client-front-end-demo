@@ -1,0 +1,11 @@
+pre { background-color: #4e5052; border: 1px solid #06c2e7; color: aliceblue; overflow-x: auto; padding: 0.5em; }
+.container {
+    padding-top: 50px;
+}
+.feature-card{
+    margin-top: 20px;
+}
+.card {
+    height: 25vh;
+    margin-bottom: 20px;
+}

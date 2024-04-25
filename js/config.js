@@ -1,0 +1,1 @@
+window.API_KEY = 'CLIENT_API_KEY';
